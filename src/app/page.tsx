@@ -8,13 +8,30 @@ import db from "@/lib/db";
 export const dynamic = 'force-dynamic';
 
 export default async function Home() {
-  // Fetch products from SQLite DB
-  // Fetch products from SQLite DB - Filtering in JS to avoid Prisma sync issues
-  const allProducts = await db.product.findMany();
-  const products = allProducts
-    .filter((p: any) => p.isActive !== false) // Default to true if field missing or is true
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .slice(0, 8);
+  let products: any[] = [];
+  let errorMsg = "";
+
+  try {
+    const allProducts = await db.product.findMany();
+    products = allProducts
+      .filter((p: any) => p.isActive !== false)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, 8);
+  } catch (error: any) {
+    console.error("DB Error:", error);
+    errorMsg = error.message || "Error desconocido al cargar productos";
+  }
+
+  if (errorMsg) {
+    return (
+      <div className="p-8 text-center">
+        <h1 className="text-2xl font-bold text-red-600 mb-4">Error de Sistema (Debug)</h1>
+        <p className="bg-red-50 p-4 rounded border border-red-200 text-red-800 font-mono text-sm inline-block text-left">
+          {errorMsg}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen" data-refresh="brand-refresh-v2" suppressHydrationWarning>
