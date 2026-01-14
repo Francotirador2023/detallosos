@@ -80,12 +80,19 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
             setIsUploading(true);
 
             // 1. Get Signature
-            const { timestamp, signature, cloudName, apiKey } = await getCloudinarySignature();
+            const result = await getCloudinarySignature();
+            console.log("Signature Result:", result); // Debug log
+
+            if (!result || !result.cloudName || !result.apiKey || !result.signature) {
+                throw new Error("Faltan credenciales de Cloudinary (Revisa Variables de Entorno en Vercel)");
+            }
+
+            const { timestamp, signature, cloudName, apiKey } = result;
 
             // 2. Upload to Cloudinary directly
             const formData = new FormData();
             formData.append("file", file);
-            formData.append("api_key", apiKey || "");
+            formData.append("api_key", apiKey);
             formData.append("timestamp", timestamp.toString());
             formData.append("signature", signature);
             formData.append("folder", "detallosos");
@@ -94,6 +101,12 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
                 method: "POST",
                 body: formData
             });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error("Cloudinary Error Data:", errorData);
+                throw new Error(errorData.error?.message || `Error ${response.status}: ${response.statusText}`);
+            }
 
             const data = await response.json();
 
@@ -104,9 +117,9 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
                 throw new Error("No secure_url in response");
             }
 
-        } catch (error) {
+        } catch (error: any) {
             console.error("Upload error:", error);
-            toast.error("Error al subir imagen. Intenta con una más pequeña o verifica tu conexión.");
+            toast.error(`Error: ${error.message || "Fallo al subir"}`);
         } finally {
             setIsUploading(false);
         }
