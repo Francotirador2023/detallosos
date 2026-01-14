@@ -7,7 +7,7 @@ import { useActionState, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useFormStatus } from "react-dom";
-import { createProduct, updateProduct } from "@/app/admin/actions";
+// import { createProduct, updateProduct } from "@/app/admin/actions";
 import { CATEGORIES } from "@/lib/constants";
 
 interface ProductFormProps {
@@ -49,11 +49,13 @@ interface ActionResponse {
 }
 
 export default function ProductForm({ initialData, mode }: ProductFormProps) {
-    const action = mode === "create" ? createProduct : updateProduct;
-    const [state, formAction] = useActionState<ActionResponse, FormData>(
-        action as any,
-        { success: false }
-    );
+    // const action = mode === "create" ? createProduct : updateProduct;
+    // const [state, formAction] = useActionState<ActionResponse, FormData>(
+    //     action as any,
+    //     { success: false }
+    // );
+    const state = { success: false, message: "" }; // Mock state
+    const formAction = () => { }; // Mock action
     const [preview, setPreview] = useState<string | null>(initialData?.image || null);
     const router = useRouter();
 
@@ -95,7 +97,7 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
                 </div>
             </div>
 
-            <form action={formAction} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <form className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {mode === "edit" && <input type="hidden" name="id" value={initialData?.id} />}
                 {mode === "edit" && <input type="hidden" name="existingImage" value={initialData?.image} />}
 
