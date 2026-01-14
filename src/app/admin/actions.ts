@@ -41,10 +41,13 @@ export async function createProduct(prevState: any, formData: FormData) {
         const category = formData.get("category") as string;
         const description = formData.get("description") as string;
         const imageFile = formData.get("image") as File;
+        const uploadedImageUrl = formData.get("uploadedImageUrl") as string;
 
         let imageUrl = "";
 
-        if (imageFile && imageFile.size > 0) {
+        if (uploadedImageUrl) {
+            imageUrl = uploadedImageUrl;
+        } else if (imageFile && imageFile.size > 0) {
             try {
                 imageUrl = await uploadToCloudinary(imageFile);
             } catch (error) {
@@ -81,6 +84,20 @@ export async function createProduct(prevState: any, formData: FormData) {
     }
 }
 
+export async function getCloudinarySignature() {
+    const cloudinary = getCloudinary();
+    const timestamp = Math.round(new Date().getTime() / 1000);
+    const signature = cloudinary.utils.api_sign_request(
+        {
+            timestamp: timestamp,
+            folder: "detallosos",
+        },
+        process.env.CLOUDINARY_API_SECRET!
+    );
+
+    return { timestamp, signature, cloudName: process.env.CLOUDINARY_CLOUD_NAME, apiKey: process.env.CLOUDINARY_API_KEY };
+}
+
 export async function updateProduct(prevState: any, formData: FormData) {
     try {
         const id = formData.get("id") as string;
@@ -90,10 +107,13 @@ export async function updateProduct(prevState: any, formData: FormData) {
         const description = formData.get("description") as string;
         const imageFile = formData.get("image") as File;
         const existingImage = formData.get("existingImage") as string;
+        const uploadedImageUrl = formData.get("uploadedImageUrl") as string;
 
         let imageUrl = existingImage;
 
-        if (imageFile && imageFile.size > 0) {
+        if (uploadedImageUrl) {
+            imageUrl = uploadedImageUrl;
+        } else if (imageFile && imageFile.size > 0) {
             try {
                 imageUrl = await uploadToCloudinary(imageFile);
             } catch (error) {

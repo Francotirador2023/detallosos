@@ -7,7 +7,7 @@ import { useActionState, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useFormStatus } from "react-dom";
-import { createProduct, updateProduct } from "@/app/admin/actions";
+import { createProduct, updateProduct, getCloudinarySignature } from "@/app/admin/actions";
 import { CATEGORIES } from "@/lib/constants";
 
 interface ProductFormProps {
@@ -24,16 +24,16 @@ interface ProductFormProps {
     mode: "create" | "edit";
 }
 
-function SubmitButton({ mode }: { mode: "create" | "edit" }) {
+function SubmitButton({ mode, isUploading }: { mode: "create" | "edit", isUploading: boolean }) {
     const { pending } = useFormStatus();
 
     return (
         <button
             type="submit"
-            disabled={pending}
-            className="w-full bg-primary text-white py-3 rounded-lg font-bold hover:bg-red-700 transition flex items-center justify-center gap-2 disabled:opacity-50"
+            disabled={pending || isUploading}
+            className="w-full bg-primary text-white py-3 rounded-lg font-bold hover:bg-red-700 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-            {pending ? "Guardando..." : (
+            {isUploading ? "Subiendo imagen..." : pending ? "Guardando..." : (
                 <>
                     <Save className="h-4 w-4" />
                     {mode === "create" ? "Guardar Producto" : "Actualizar Producto"}
@@ -55,6 +55,8 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
         { success: false }
     );
     const [preview, setPreview] = useState<string | null>(initialData?.image || null);
+    const [uploadedUrl, setUploadedUrl] = useState<string>("");
+    const [isUploading, setIsUploading] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
@@ -66,11 +68,47 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
         }
     }, [state, router]);
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (file) {
-            const url = URL.createObjectURL(file);
-            setPreview(url);
+        if (!file) return;
+
+        // Preview immediate (local)
+        const url = URL.createObjectURL(file);
+        setPreview(url);
+
+        try {
+            setIsUploading(true);
+
+            // 1. Get Signature
+            const { timestamp, signature, cloudName, apiKey } = await getCloudinarySignature();
+
+            // 2. Upload to Cloudinary directly
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("api_key", apiKey || "");
+            formData.append("timestamp", timestamp.toString());
+            formData.append("signature", signature);
+            formData.append("folder", "detallosos");
+
+            const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+                method: "POST",
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.secure_url) {
+                setUploadedUrl(data.secure_url);
+                toast.success("Imagen subida correctamente");
+            } else {
+                throw new Error("No secure_url in response");
+            }
+
+        } catch (error) {
+            console.error("Upload error:", error);
+            toast.error("Error al subir imagen. Intenta con una más pequeña o verifica tu conexión.");
+        } finally {
+            setIsUploading(false);
         }
     };
 
@@ -189,18 +227,24 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                         <h3 className="font-bold text-lg mb-4">Imagen Principal</h3>
                         <div className="space-y-4">
+                            {/* Hidden Input for the uploaded URL */}
+                            <input type="hidden" name="uploadedImageUrl" value={uploadedUrl} />
+
                             {preview && (
                                 <div className="relative aspect-square w-full rounded-lg overflow-hidden border bg-gray-50">
                                     <Image
                                         src={preview}
                                         alt="Vista previa"
                                         fill
-                                        className="object-cover"
+                                        className={`object-cover ${isUploading ? 'opacity-50 animate-pulse' : ''}`}
                                         unoptimized={preview?.startsWith('blob:')}
                                     />
                                     <button
                                         type="button"
-                                        onClick={() => setPreview(null)}
+                                        onClick={() => {
+                                            setPreview(null);
+                                            setUploadedUrl("");
+                                        }}
                                         className="absolute top-2 right-2 bg-white/80 hover:bg-white p-1 rounded-full shadow-sm text-red-500 transition-colors"
                                     >
                                         <X className="h-4 w-4" />
@@ -226,12 +270,12 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
                                 />
                             </label>
                             <p className="text-xs text-gray-400">
-                                * Sube una imagen clara (formato JPG, PNG o WebP). Máx 5MB.
+                                * Sube una imagen clara (formato JPG, PNG o WebP). Máx 10MB+.
                             </p>
                         </div>
                     </div>
 
-                    <SubmitButton mode={mode} />
+                    <SubmitButton mode={mode} isUploading={isUploading} />
                 </div>
             </form>
         </div>
