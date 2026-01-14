@@ -181,9 +181,9 @@ export default async function Home() {
                 key={product.id}
                 product={{
                   ...product,
-                  description: product.description ?? undefined,
                   price: Number(product.price),
                   category: product.category || "",
+                  description: product.description || "",
                   stock: (product as any).stock ?? 10,
                   isActive: (product as any).isActive ?? true
                 }}

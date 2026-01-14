@@ -34,6 +34,7 @@ export default async function ProductPage({ params }: PageProps) {
         ...product,
         price: Number(product.price),
         category: product.category || "",
+        description: product.description || "",
         stock: (product as any).stock || 0,
         isActive: (product as any).isActive ?? true
     };
@@ -44,6 +45,7 @@ export default async function ProductPage({ params }: PageProps) {
             ...p,
             price: Number(p.price),
             category: p.category || "",
+            description: p.description || "",
             stock: (p as any).stock || 0,
             isActive: (p as any).isActive ?? true
         }));
