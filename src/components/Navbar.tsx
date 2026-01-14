@@ -112,7 +112,7 @@ export default function Navbar() {
                                     className="flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors border-b last:border-0"
                                 >
                                     <div className="relative w-10 h-10 rounded overflow-hidden flex-shrink-0">
-                                        <Image src={(product.image.startsWith("http") || product.image.startsWith("/")) ? product.image : "/logo.png"} alt={product.name} fill className="object-cover" />
+                                        <Image src={(product.image?.startsWith("http") || product.image?.startsWith("/")) ? product.image : "/logo.png"} alt={product.name} fill className="object-cover" />
                                     </div>
                                     <div>
                                         <p className="text-sm font-medium text-gray-900">{product.name}</p>

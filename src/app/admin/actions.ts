@@ -30,86 +30,97 @@ async function uploadToCloudinary(file: File): Promise<string> {
     });
 }
 
-export async function createProduct(formData: FormData) {
-    const name = formData.get("name") as string;
-    const price = parseFloat(formData.get("price") as string);
-    const category = formData.get("category") as string;
-    const description = formData.get("description") as string;
-    const imageFile = formData.get("image") as File;
+export async function createProduct(prevState: any, formData: FormData) {
+    try {
+        const name = formData.get("name") as string;
+        const price = parseFloat(formData.get("price") as string);
+        const category = formData.get("category") as string;
+        const description = formData.get("description") as string;
+        const imageFile = formData.get("image") as File;
 
-    let imageUrl = "";
+        let imageUrl = "";
 
-    if (imageFile && imageFile.size > 0) {
-        try {
-            imageUrl = await uploadToCloudinary(imageFile);
-        } catch (error) {
-            console.error("Cloudinary upload error:", error);
+        if (imageFile && imageFile.size > 0) {
+            try {
+                imageUrl = await uploadToCloudinary(imageFile);
+            } catch (error) {
+                console.error("Cloudinary upload error:", error);
+                throw new Error("Error al subir la imagen a la nube.");
+            }
+        } else {
+            // Fallback to random high-quality image based on category
             imageUrl = "https://images.unsplash.com/photo-1596627685028-2e0655ee14e8?auto=format&fit=crop&q=80&w=800";
+            if (category === "Tulipanes") imageUrl = "https://images.unsplash.com/photo-1520763185298-1b434c919102?auto=format&fit=crop&q=80&w=800";
         }
-    } else {
-        // Fallback to random high-quality image based on category
-        imageUrl = "https://images.unsplash.com/photo-1596627685028-2e0655ee14e8?auto=format&fit=crop&q=80&w=800";
-        if (category === "Tulipanes") imageUrl = "https://images.unsplash.com/photo-1520763185298-1b434c919102?auto=format&fit=crop&q=80&w=800";
+
+        const stock = parseInt(formData.get("stock") as string) || 0;
+        const isActive = formData.get("isActive") === "true";
+
+        await db.product.create({
+            data: {
+                name,
+                price,
+                category,
+                description,
+                image: imageUrl,
+                stock,
+                isActive,
+            }
+        });
+
+        revalidatePath("/admin/products");
+        revalidatePath("/");
+        return { success: true, message: "Producto creado correctamente" };
+    } catch (error: any) {
+        console.error("Database error creating product:", error);
+        return { success: false, message: error.message || "Error al guardar el producto en la base de datos." };
     }
-
-    const stock = parseInt(formData.get("stock") as string) || 0;
-    const isActive = formData.get("isActive") === "true";
-
-    await (db.product as any).create({
-        data: {
-            name,
-            price,
-            category,
-            description,
-            image: imageUrl,
-            stock,
-            isActive,
-        }
-    });
-
-    revalidatePath("/admin/products");
-    revalidatePath("/");
-    redirect("/admin/products");
 }
 
-export async function updateProduct(formData: FormData) {
-    const id = formData.get("id") as string;
-    const name = formData.get("name") as string;
-    const price = parseFloat(formData.get("price") as string);
-    const category = formData.get("category") as string;
-    const description = formData.get("description") as string;
-    const imageFile = formData.get("image") as File;
-    const existingImage = formData.get("existingImage") as string;
+export async function updateProduct(prevState: any, formData: FormData) {
+    try {
+        const id = formData.get("id") as string;
+        const name = formData.get("name") as string;
+        const price = parseFloat(formData.get("price") as string);
+        const category = formData.get("category") as string;
+        const description = formData.get("description") as string;
+        const imageFile = formData.get("image") as File;
+        const existingImage = formData.get("existingImage") as string;
 
-    let imageUrl = existingImage;
+        let imageUrl = existingImage;
 
-    if (imageFile && imageFile.size > 0) {
-        try {
-            imageUrl = await uploadToCloudinary(imageFile);
-        } catch (error) {
-            console.error("Cloudinary upload error:", error);
+        if (imageFile && imageFile.size > 0) {
+            try {
+                imageUrl = await uploadToCloudinary(imageFile);
+            } catch (error) {
+                console.error("Cloudinary upload error:", error);
+                throw new Error("Error al actualizar la imagen.");
+            }
         }
+
+        const stock = parseInt(formData.get("stock") as string) || 0;
+        const isActive = formData.get("isActive") === "true";
+
+        await db.product.update({
+            where: { id },
+            data: {
+                name,
+                price,
+                category,
+                description,
+                image: imageUrl,
+                stock,
+                isActive,
+            }
+        });
+
+        revalidatePath("/admin/products");
+        revalidatePath("/");
+        return { success: true, message: "Producto actualizado correctamente" };
+    } catch (error: any) {
+        console.error("Database error updating product:", error);
+        return { success: false, message: error.message || "Error al actualizar el producto." };
     }
-
-    const stock = parseInt(formData.get("stock") as string) || 0;
-    const isActive = formData.get("isActive") === "true";
-
-    await (db.product as any).update({
-        where: { id },
-        data: {
-            name,
-            price,
-            category,
-            description,
-            image: imageUrl,
-            stock,
-            isActive,
-        }
-    });
-
-    revalidatePath("/admin/products");
-    revalidatePath("/");
-    redirect("/admin/products");
 }
 
 export async function deleteProduct(formData: FormData) {

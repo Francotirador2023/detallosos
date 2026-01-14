@@ -48,7 +48,7 @@ export default function CartSheet() {
                             <div key={item.id} className="flex gap-4 group">
                                 <div className="relative h-20 w-20 flex-shrink-0 bg-gray-50 rounded-xl overflow-hidden border border-gray-100 group-hover:border-primary/30 transition-colors">
                                     <Image
-                                        src={(item.image.startsWith("http") || item.image.startsWith("/")) ? item.image : "/logo.png"}
+                                        src={(item.image?.startsWith("http") || item.image?.startsWith("/")) ? item.image : "/logo.png"}
                                         alt={item.name}
                                         fill
                                         className="object-cover"

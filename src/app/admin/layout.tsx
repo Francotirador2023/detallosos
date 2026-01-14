@@ -19,6 +19,7 @@ export default function AdminLayout({
     children: React.ReactNode;
 }) {
     const pathname = usePathname();
+    const isLoginPage = pathname === "/admin/login";
 
     const navItems = [
         { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
@@ -33,8 +34,12 @@ export default function AdminLayout({
         window.location.href = "/";
     };
 
+    if (isLoginPage) {
+        return <>{children}</>;
+    }
+
     return (
-        <div className="min-h-screen flex bg-gray-100">
+        <div className="min-h-screen flex bg-gray-50">
             {/* Sidebar */}
             <aside className="w-64 bg-white border-r hidden md:flex flex-col fixed inset-y-0">
                 <div className="h-16 flex items-center px-6 border-b">
@@ -46,7 +51,7 @@ export default function AdminLayout({
 
                 <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
                     {navItems.map((item) => {
-                        const isActive = pathname.startsWith(item.href);
+                        const isActive = pathname?.startsWith(item.href) || false;
                         return (
                             <Link
                                 key={item.href}
@@ -81,7 +86,7 @@ export default function AdminLayout({
                 {/* Header */}
                 <header className="h-16 bg-white border-b flex items-center justify-between px-8 sticky top-0 z-30">
                     <h1 className="font-semibold text-gray-700 capitalize">
-                        {pathname.split("/").pop() || "Dashboard"}
+                        {pathname?.split("/").pop() || "Dashboard"}
                     </h1>
                     <div className="flex items-center gap-4">
                         <div className="h-8 w-8 bg-gray-200 rounded-full overflow-hidden">

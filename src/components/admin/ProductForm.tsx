@@ -3,8 +3,10 @@
 import { Save, ArrowLeft, X } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { useActionState, useEffect, useState } from "react";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 import { useFormStatus } from "react-dom";
-import { useState } from "react";
 import { createProduct, updateProduct } from "@/app/admin/actions";
 import { CATEGORIES } from "@/lib/constants";
 
@@ -41,9 +43,28 @@ function SubmitButton({ mode }: { mode: "create" | "edit" }) {
     );
 }
 
+interface ActionResponse {
+    success: boolean;
+    message?: string;
+}
+
 export default function ProductForm({ initialData, mode }: ProductFormProps) {
     const action = mode === "create" ? createProduct : updateProduct;
+    const [state, formAction] = useActionState<ActionResponse, FormData>(
+        action as any,
+        { success: false }
+    );
     const [preview, setPreview] = useState<string | null>(initialData?.image || null);
+    const router = useRouter();
+
+    useEffect(() => {
+        if (state.success) {
+            toast.success(state.message);
+            router.push("/admin/products");
+        } else if (state.message) {
+            toast.error(state.message);
+        }
+    }, [state, router]);
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -74,7 +95,7 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
                 </div>
             </div>
 
-            <form action={action} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <form action={formAction} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {mode === "edit" && <input type="hidden" name="id" value={initialData?.id} />}
                 {mode === "edit" && <input type="hidden" name="existingImage" value={initialData?.image} />}
 
@@ -175,7 +196,7 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
                                         alt="Vista previa"
                                         fill
                                         className="object-cover"
-                                        unoptimized={preview.startsWith('blob:')}
+                                        unoptimized={preview?.startsWith('blob:')}
                                     />
                                     <button
                                         type="button"
