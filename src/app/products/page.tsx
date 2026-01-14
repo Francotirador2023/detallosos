@@ -27,8 +27,10 @@ export default async function ProductsPage() {
                             <ProductCard
                                 key={product.id}
                                 product={{
-                                    ...product,
+                                    id: product.id,
+                                    name: product.name,
                                     price: Number(product.price),
+                                    image: product.image,
                                     category: product.category || "",
                                     description: product.description || "",
                                     stock: (product as any).stock || 0,

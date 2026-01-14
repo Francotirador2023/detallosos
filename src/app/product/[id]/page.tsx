@@ -31,8 +31,10 @@ export default async function ProductPage({ params }: PageProps) {
 
     // Data conversion for client component
     const productForClient = {
-        ...product,
+        id: product.id,
+        name: product.name,
         price: Number(product.price),
+        image: product.image,
         category: product.category || "",
         description: product.description || "",
         stock: (product as any).stock || 0,
@@ -41,9 +43,11 @@ export default async function ProductPage({ params }: PageProps) {
 
     const relatedForClient = related
         .filter((p: any) => p.isActive !== false)
-        .map(p => ({
-            ...p,
+        .map((p: any) => ({
+            id: p.id,
+            name: p.name,
             price: Number(p.price),
+            image: p.image,
             category: p.category || "",
             description: p.description || "",
             stock: (p as any).stock || 0,

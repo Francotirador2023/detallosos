@@ -25,12 +25,27 @@ export default async function CategoryPage({ params }: PageProps) {
 
     const allProducts = await db.product.findMany();
     const products = allProducts
-        .filter((p: any) => p.isActive !== false) // Filter by active status in JS
-        .filter(p => p.category?.toLowerCase() === slug.toLowerCase());
+        .filter((p: any) => p.isActive !== false)
+        .map((p: any) => ({
+            id: p.id as string,
+            name: p.name as string,
+            price: Number(p.price),
+            image: p.image as string,
+            category: (p.category as string) || "",
+            description: (p.description as string) || "",
+            stock: (p.stock as number) || 0,
+            isActive: (p.isActive as boolean) ?? true
+        }))
+        .filter(p => p.category.toLowerCase() === slug.toLowerCase());
+
+    if (products.length === 0 && !["rosas", "tulipanes", "exclusivo", "enamorados"].includes(slug.toLowerCase())) {
+        // Only return 404/Empty if it's a really weird slug, 
+        // otherwise stay silent to allow build to pass if DB is empty.
+    }
 
     if (products.length === 0) {
         return (
-            <div className="min-h-screen container-custom py-20 text-center">
+            <div className="min-h-screen bg-gray-50 py-20 text-center">
                 <h1 className="text-4xl font-bold mb-4">{categoryTitle}</h1>
                 <p className="text-gray-500">No hay productos disponibles en esta categoría por el momento.</p>
             </div>
@@ -47,17 +62,7 @@ export default async function CategoryPage({ params }: PageProps) {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
                     {products.map((product) => (
-                        <ProductCard
-                            key={product.id}
-                            product={{
-                                ...product,
-                                price: Number(product.price),
-                                category: product.category || "",
-                                description: product.description || "",
-                                stock: (product as any).stock || 0,
-                                isActive: (product as any).isActive ?? true
-                            }}
-                        />
+                        <ProductCard key={product.id} product={product} />
                     ))}
                 </div>
             </div>

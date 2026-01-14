@@ -176,12 +176,14 @@ export default async function Home() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-            {products.map((product) => (
+            {products.map((product: any) => (
               <ProductCard
                 key={product.id}
                 product={{
-                  ...product,
+                  id: product.id,
+                  name: product.name,
                   price: Number(product.price),
+                  image: product.image,
                   category: product.category || "",
                   description: product.description || "",
                   stock: (product as any).stock ?? 10,
