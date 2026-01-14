@@ -7,37 +7,8 @@ import { deleteProduct } from "../actions";
 export const dynamic = 'force-dynamic';
 
 export default async function ProductsPage() {
-    let products: any[] = [];
-    let errorMsg = "";
-
-    try {
-        products = (await db.product.findMany() as any[])
-            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    } catch (err: any) {
-        console.error("Error loading products:", err);
-        errorMsg = err.message || "Error desconocido al conectar con la Base de Datos.";
-    }
-
-    if (errorMsg) {
-        return (
-            <div className="p-8 text-center space-y-4">
-                <h1 className="text-2xl font-bold text-red-600">Error Crítico</h1>
-                <p className="text-gray-700">No se pudo cargar la lista de productos.</p>
-                <div className="bg-red-50 border border-red-200 p-4 rounded text-left font-mono text-xs overflow-auto max-w-2xl mx-auto">
-                    {errorMsg}
-                </div>
-                <div className="mt-8">
-                    <Link
-                        href="/admin/products/new"
-                        className="bg-primary text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700 inline-flex items-center gap-2"
-                    >
-                        <Plus className="h-4 w-4" />
-                        Intentar crear producto de todos modos
-                    </Link>
-                </div>
-            </div>
-        );
-    }
+    const products = (await db.product.findMany() as any[])
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
     return (
         <div className="space-y-6">
