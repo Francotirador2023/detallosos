@@ -9,7 +9,8 @@ import {
     Users,
     Settings,
     LogOut,
-    Flower
+    Flower,
+    Plus
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -24,6 +25,7 @@ export default function AdminLayout({
     const navItems = [
         { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
         { name: "Productos", href: "/admin/products", icon: Package },
+        { name: "Crear Producto", href: "/admin/products/new", icon: Plus }, // Quick shortcut
         { name: "Ordenes", href: "/admin/orders", icon: ShoppingCart },
         { name: "Clientes", href: "/admin/customers", icon: Users },
         { name: "Configuración", href: "/admin/settings", icon: Settings },
