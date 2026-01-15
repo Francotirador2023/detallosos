@@ -7,6 +7,11 @@ import { v2 as cloudinary } from "cloudinary";
 
 // Configure Cloudinary Lazily
 const getCloudinary = () => {
+    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+        console.error("CRITICAL: Missing Cloudinary Environment Variables");
+        return null;
+    }
+
     cloudinary.config({
         cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
         api_key: process.env.CLOUDINARY_API_KEY,
@@ -20,11 +25,16 @@ async function uploadToCloudinary(file: File): Promise<string> {
     const buffer = Buffer.from(arrayBuffer);
     const cloudinary = getCloudinary();
 
+    if (!cloudinary) {
+        throw new Error("Configuración de Cloudinary no encontrada en el servidor.");
+    }
+
     return new Promise((resolve, reject) => {
         cloudinary.uploader.upload_stream(
             { folder: "detallosos" },
             (error, result) => {
                 if (error || !result) {
+                    console.error("Cloudinary Upload Stream Error:", error);
                     reject(error || new Error("Upload failed"));
                 } else {
                     resolve(result.secure_url);
@@ -36,25 +46,33 @@ async function uploadToCloudinary(file: File): Promise<string> {
 
 export async function createProduct(prevState: any, formData: FormData) {
     try {
+        console.log("Starting createProduct server action...");
+
         const name = formData.get("name") as string;
         const price = parseFloat(formData.get("price") as string);
         const category = formData.get("category") as string;
         const description = formData.get("description") as string;
+
+        // Note: we might rely solely on uploadedImageUrl to avoid Vercel body limits.
+        // If imageFile is present, it means the client side didn't remove the name attribute or it's a fallback.
         const imageFile = formData.get("image") as File;
         const uploadedImageUrl = formData.get("uploadedImageUrl") as string;
 
         let imageUrl = "";
 
         if (uploadedImageUrl) {
+            console.log("Using pre-uploaded image URL:", uploadedImageUrl);
             imageUrl = uploadedImageUrl;
         } else if (imageFile && imageFile.size > 0) {
+            console.log("Attempting server-side upload for file size:", imageFile.size);
             try {
                 imageUrl = await uploadToCloudinary(imageFile);
-            } catch (error) {
+            } catch (error: any) {
                 console.error("Cloudinary upload error:", error);
-                throw new Error("Error al subir la imagen a la nube.");
+                return { success: false, message: `Error al subir la imagen: ${error.message}` };
             }
         } else {
+            console.log("No image provided, using fallback.");
             // Fallback to random high-quality image based on category
             imageUrl = "https://images.unsplash.com/photo-1596627685028-2e0655ee14e8?auto=format&fit=crop&q=80&w=800";
             if (category === "Tulipanes") imageUrl = "https://images.unsplash.com/photo-1520763185298-1b434c919102?auto=format&fit=crop&q=80&w=800";
@@ -63,6 +81,7 @@ export async function createProduct(prevState: any, formData: FormData) {
         const stock = parseInt(formData.get("stock") as string) || 0;
         const isActive = formData.get("isActive") === "true";
 
+        console.log("Creating product in DB...");
         await db.product.create({
             data: {
                 name,
@@ -74,6 +93,7 @@ export async function createProduct(prevState: any, formData: FormData) {
                 isActive,
             }
         });
+        console.log("Product created successfully.");
 
         revalidatePath("/admin/products");
         revalidatePath("/");
@@ -85,17 +105,31 @@ export async function createProduct(prevState: any, formData: FormData) {
 }
 
 export async function getCloudinarySignature() {
-    const cloudinary = getCloudinary();
-    const timestamp = Math.round(new Date().getTime() / 1000);
-    const signature = cloudinary.utils.api_sign_request(
-        {
-            timestamp: timestamp,
-            folder: "detallosos",
-        },
-        process.env.CLOUDINARY_API_SECRET!
-    );
+    try {
+        const cloudinary = getCloudinary();
+        if (!cloudinary) {
+            throw new Error("Variables de entorno de Cloudinary no configuradas.");
+        }
 
-    return { timestamp, signature, cloudName: process.env.CLOUDINARY_CLOUD_NAME, apiKey: process.env.CLOUDINARY_API_KEY };
+        const timestamp = Math.round(new Date().getTime() / 1000);
+        const signature = cloudinary.utils.api_sign_request(
+            {
+                timestamp: timestamp,
+                folder: "detallosos",
+            },
+            process.env.CLOUDINARY_API_SECRET!
+        );
+
+        return {
+            timestamp,
+            signature,
+            cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+            apiKey: process.env.CLOUDINARY_API_KEY
+        };
+    } catch (error: any) {
+        console.error("Error generating Cloudinary signature:", error);
+        return { error: error.message || "Error generando firma" };
+    }
 }
 
 export async function updateProduct(prevState: any, formData: FormData) {
@@ -116,9 +150,9 @@ export async function updateProduct(prevState: any, formData: FormData) {
         } else if (imageFile && imageFile.size > 0) {
             try {
                 imageUrl = await uploadToCloudinary(imageFile);
-            } catch (error) {
+            } catch (error: any) {
                 console.error("Cloudinary upload error:", error);
-                throw new Error("Error al actualizar la imagen.");
+                return { success: false, message: "Error al actualizar la imagen." };
             }
         }
 

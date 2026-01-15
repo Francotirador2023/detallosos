@@ -81,10 +81,14 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
 
             // 1. Get Signature
             const result = await getCloudinarySignature();
-            console.log("Signature Result:", result); // Debug log
+            console.log("Signature Result:", result);
+
+            if ('error' in result) {
+                throw new Error(result.error as string);
+            }
 
             if (!result || !result.cloudName || !result.apiKey || !result.signature) {
-                throw new Error("Faltan credenciales de Cloudinary (Revisa Variables de Entorno en Vercel)");
+                throw new Error("Faltan credenciales de Cloudinary (Revisa Variables de Entorno)");
             }
 
             const { timestamp, signature, cloudName, apiKey } = result;
@@ -92,9 +96,9 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
             // 2. Upload to Cloudinary directly
             const formData = new FormData();
             formData.append("file", file);
-            formData.append("api_key", apiKey);
+            formData.append("api_key", apiKey!);
             formData.append("timestamp", timestamp.toString());
-            formData.append("signature", signature);
+            formData.append("signature", signature!);
             formData.append("folder", "detallosos");
 
             const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
@@ -112,14 +116,17 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
 
             if (data.secure_url) {
                 setUploadedUrl(data.secure_url);
-                toast.success("Imagen subida correctamente");
+                toast.success("Imagen subida correctamente a la nube");
             } else {
                 throw new Error("No secure_url in response");
             }
 
         } catch (error: any) {
             console.error("Upload error:", error);
-            toast.error(`Error: ${error.message || "Fallo al subir"}`);
+            toast.error(`Error al subir imagen: ${error.message || "Fallo desconocido"}`);
+            // Clear preview on error so user knows it failed
+            setPreview(null);
+            if (initialData?.image) setPreview(initialData.image);
         } finally {
             setIsUploading(false);
         }
@@ -240,7 +247,10 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                         <h3 className="font-bold text-lg mb-4">Imagen Principal</h3>
                         <div className="space-y-4">
-                            {/* Hidden Input for the uploaded URL */}
+                            {/* 
+                                Hidden Input for the uploaded URL.
+                                This is what actually gets saved to the DB.
+                            */}
                             <input type="hidden" name="uploadedImageUrl" value={uploadedUrl} />
 
                             {preview && (
@@ -268,7 +278,12 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
                             <label className="block">
                                 <span className="sr-only">Elegir imagen</span>
                                 <input
-                                    name="image"
+                                    /* 
+                                     IMPORTANT: No 'name' attribute here! 
+                                     This prevents the large file from being sent to the server action,
+                                     avoiding Vercel's 4.5MB body limit. 
+                                     The image goes directly to Cloudinary, and we just send the URL.
+                                    */
                                     type="file"
                                     accept="image/*"
                                     onChange={handleImageChange}
@@ -283,7 +298,7 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
                                 />
                             </label>
                             <p className="text-xs text-gray-400">
-                                * Sube una imagen clara (formato JPG, PNG o WebP). Máx 10MB+.
+                                * Sube una imagen clara (formato JPG, PNG o WebP). No hay limite de tamaño (Cloudinary).
                             </p>
                         </div>
                     </div>
