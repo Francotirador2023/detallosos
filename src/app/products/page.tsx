@@ -4,10 +4,17 @@ import db from "@/lib/db";
 export const dynamic = 'force-dynamic';
 
 export default async function ProductsPage() {
-    const allProducts = await db.product.findMany();
-    const products = allProducts
+    let allProducts = [];
+    try {
+        // @ts-ignore
+        allProducts = await db.product.findMany();
+    } catch (error) {
+        console.error("Failed to fetch products from DB:", error);
+    }
+
+    const products = Array.isArray(allProducts) ? allProducts
         .filter((p: any) => p.isActive !== false) // Filter by active status in JS
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()) : [];
 
     return (
         <div className="min-h-screen bg-gray-50 py-12" suppressHydrationWarning>
@@ -20,6 +27,7 @@ export default async function ProductsPage() {
                 {products.length === 0 ? (
                     <div className="text-center py-20">
                         <p className="text-gray-500 text-lg">No hay productos disponibles por el momento.</p>
+                        <p className="text-xs text-red-400 mt-2">Error de conexión con la base de datos (Ver logs)</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
