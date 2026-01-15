@@ -9,11 +9,19 @@ export const dynamic = 'force-dynamic';
 
 export default async function Home() {
   // Fetch products from SQLite DB
-  const allProducts = await db.product.findMany();
-  const products = allProducts
+  let allProducts = [];
+  try {
+    // @ts-ignore
+    allProducts = await db.product.findMany();
+  } catch (error) {
+    console.error("Failed to fetch products from DB:", error);
+    // We can continue with empty products to avoid crashing the whole page
+  }
+
+  const products = Array.isArray(allProducts) ? allProducts
     .filter((p: any) => p.isActive !== false)
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .slice(0, 8);
+    .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 8) : [];
 
   return (
     <div className="flex flex-col min-h-screen" data-refresh="brand-refresh-v2" suppressHydrationWarning>
@@ -172,6 +180,11 @@ export default async function Home() {
           <div className="text-center mb-12 space-y-2">
             <h2 className="text-3xl font-bold text-gray-900">Nuestros Favoritos</h2>
             <p className="text-gray-500">Descubre los arreglos más vendidos de la temporada</p>
+            {allProducts.length === 0 && (
+              <div className="bg-yellow-50 text-yellow-800 p-4 rounded-lg mt-4 max-w-md mx-auto">
+                No se pudieron cargar productos. (Verifica logs del servidor)
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
