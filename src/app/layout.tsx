@@ -5,7 +5,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import CartSheet from '@/components/CartSheet';
 import { Toaster } from 'sonner';
-import { WhatsAppButton } from '@/components/WhatsAppButton';
+import WhatsAppButton from '@/components/WhatsAppButton';
 
 const outfit = Outfit({ subsets: ['latin'] });
 
