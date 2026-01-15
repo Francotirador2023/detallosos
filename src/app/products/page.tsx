@@ -1,12 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import ProductCard from "@/components/ProductCard";
 import db from "@/lib/db";
 
 export const dynamic = 'force-dynamic';
 
 export default async function ProductsPage() {
-    let allProducts = [];
+    let allProducts: any[] = [];
     try {
-        // @ts-ignore
         allProducts = await db.product.findMany();
     } catch (error) {
         console.error("Failed to fetch products from DB:", error);
@@ -27,7 +27,9 @@ export default async function ProductsPage() {
                 {products.length === 0 ? (
                     <div className="text-center py-20">
                         <p className="text-gray-500 text-lg">No hay productos disponibles por el momento.</p>
-                        <p className="text-xs text-red-400 mt-2">Error de conexión con la base de datos (Ver logs)</p>
+                        <p className="text-xs text-red-400 mt-2">
+                            (Problema de conexión temporal)
+                        </p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">

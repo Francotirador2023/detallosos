@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Link from "next/link";
 import Image from "next/image";
 import ProductCard from "@/components/ProductCard";
@@ -9,9 +10,8 @@ export const dynamic = 'force-dynamic';
 
 export default async function Home() {
   // Fetch products from SQLite DB
-  let allProducts = [];
+  let allProducts: any[] = [];
   try {
-    // @ts-ignore
     allProducts = await db.product.findMany();
   } catch (error) {
     console.error("Failed to fetch products from DB:", error);
@@ -180,9 +180,10 @@ export default async function Home() {
           <div className="text-center mb-12 space-y-2">
             <h2 className="text-3xl font-bold text-gray-900">Nuestros Favoritos</h2>
             <p className="text-gray-500">Descubre los arreglos más vendidos de la temporada</p>
-            {allProducts.length === 0 && (
+            {/* Show warning if products failed */}
+            {products.length === 0 && (
               <div className="bg-yellow-50 text-yellow-800 p-4 rounded-lg mt-4 max-w-md mx-auto">
-                No se pudieron cargar productos. (Verifica logs del servidor)
+                {/* We won't show the error here to users, just fallback content or empty */}
               </div>
             )}
           </div>
