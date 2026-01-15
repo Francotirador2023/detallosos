@@ -35,11 +35,11 @@ export default function Footer() {
                 <div className="space-y-4">
                     <h3 className="text-white font-bold text-lg">Ayuda</h3>
                     <ul className="space-y-2 text-sm">
-                        <li><Link href="#" className="hover:text-white transition-colors">Preguntas Frecuentes</Link></li>
-                        <li><Link href="#" className="hover:text-white transition-colors">Términos y Condiciones</Link></li>
-                        <li><Link href="#" className="hover:text-white transition-colors">Política de Privacidad</Link></li>
-                        <li><Link href="#" className="hover:text-white transition-colors">Rastrea tu Pedido</Link></li>
-                        <li><Link href="#" className="hover:text-white transition-colors">Contacto</Link></li>
+                        <li><Link href="/preguntas-frecuentes" className="hover:text-white transition-colors">Preguntas Frecuentes</Link></li>
+                        <li><Link href="/terminos" className="hover:text-white transition-colors">Términos y Condiciones</Link></li>
+                        <li><Link href="/privacidad" className="hover:text-white transition-colors">Política de Privacidad</Link></li>
+                        <li><Link href="/cambios-devoluciones" className="hover:text-white transition-colors">Políticas de Cambio</Link></li>
+                        <li><Link href="/nosotros" className="hover:text-white transition-colors">Nosotros</Link></li>
                     </ul>
                 </div>
 
