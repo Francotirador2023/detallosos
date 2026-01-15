@@ -38,7 +38,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }))
 
     // 3. Dynamic Products
-    let products = [];
+    let products: any[] = [];
     try {
         products = await db.product.findMany({
             where: { isActive: true },
