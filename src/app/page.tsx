@@ -80,16 +80,6 @@ export default async function Home() {
                 className="object-cover group-hover:scale-105 transition-transform duration-700"
                 priority
               />
-              {/* Floating Badge */}
-              <div className="absolute bottom-10 left-10 bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-2xl border border-white/50 flex items-center gap-4 animate-bounce-slow">
-                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                  <Truck className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 font-medium">Envío hoy mismo</p>
-                  <p className="text-sm font-bold text-gray-900">Lima & Providencias</p>
-                </div>
-              </div>
             </div>
           </div>
         </div>
