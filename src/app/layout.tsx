@@ -10,7 +10,7 @@ import WhatsAppButton from '@/components/WhatsAppButton';
 const outfit = Outfit({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://detallosos.vercel.app'),
+  metadataBase: new URL('https://detallosos-bymayeff.com'),
   title: "DetallOsos | Regalos y Arreglos Florales en Lima",
   description: "Sorprende con los mejores arreglos florales y regalos personalizados en Lima. Envío express y calidad garantizada.",
 };

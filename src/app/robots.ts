@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
             allow: '/',
             disallow: ['/admin/', '/checkout/', '/api/'],
         },
-        sitemap: 'https://detallosos.vercel.app/sitemap.xml',
+        sitemap: 'https://detallosos-bymayeff.com/sitemap.xml',
     }
 }

@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next'
 import db from '@/lib/db'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-    const baseUrl = 'https://detallosos.vercel.app'
+    const baseUrl = 'https://detallosos-bymayeff.com'
 
     // 1. Static Routes
     const routes = [
