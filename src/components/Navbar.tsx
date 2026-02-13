@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Search, ShoppingCart, User, Heart, Menu, X, Facebook, Phone } from "lucide-react";
+import { Search, ShoppingCart, User, Heart, Menu, X, Phone } from "lucide-react";
 import { useCartStore } from "@/lib/store";
 import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
@@ -129,12 +129,15 @@ export default function Navbar() {
                     {/* Social Links */}
                     <div className="hidden sm:flex items-center gap-2 border-r pr-4 mr-2">
                         <a
-                            href="https://facebook.com"
+                            href="https://tiktok.com/@detllosos.by.maye"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="p-2 hover:bg-blue-50 text-blue-600 rounded-full transition-colors"
+                            className="p-2 hover:bg-black/5 text-gray-900 rounded-full transition-colors"
+                            title="Sígenos en TikTok"
                         >
-                            <Facebook className="h-5 w-5" />
+                            <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
+                                <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.17-2.89-.6-4.13-1.47V18c0 1.94-1.12 3.57-2.73 4.29-1.61.71-3.61.74-5.22.02-1.61-.71-2.73-2.34-2.73-4.29 0-1.94 1.12-3.57 2.73-4.29 1.61-.71 3.6-.72 5.21 0 .22.1.43.22.63.35V7.12a14.73 14.73 0 0 1-3.69-.02V.02z" />
+                            </svg>
                         </a>
                         <a
                             href="https://wa.me/51935638342"
