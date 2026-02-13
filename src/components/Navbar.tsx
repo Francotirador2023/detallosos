@@ -132,11 +132,20 @@ export default function Navbar() {
                             href="https://tiktok.com/@detllosos.by.maye"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="p-2 hover:bg-black/5 text-gray-900 rounded-full transition-colors"
+                            className="p-2 hover:bg-black/5 text-gray-900 rounded-full transition-colors flex items-center justify-center"
                             title="Sígenos en TikTok"
                         >
-                            <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
-                                <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.17-2.89-.6-4.13-1.47V18c0 1.94-1.12 3.57-2.73 4.29-1.61.71-3.61.74-5.22.02-1.61-.71-2.73-2.34-2.73-4.29 0-1.94 1.12-3.57 2.73-4.29 1.61-.71 3.6-.72 5.21 0 .22.1.43.22.63.35V7.12a14.73 14.73 0 0 1-3.69-.02V.02z" />
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="h-5 w-5"
+                            >
+                                <path d="M9 12a4 4 0 1 0 4 4V2" />
+                                <path d="M13 7a5 5 0 0 0 5 5" />
                             </svg>
                         </a>
                         <a
