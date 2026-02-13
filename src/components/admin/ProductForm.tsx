@@ -18,6 +18,7 @@ interface ProductFormProps {
         description: string | null;
         category: string;
         image: string;
+        images?: string[];
         stock: number;
         isActive: boolean;
     };
@@ -56,6 +57,9 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
     );
     const [preview, setPreview] = useState<string | null>(initialData?.image || null);
     const [uploadedUrl, setUploadedUrl] = useState<string>("");
+
+    // Gallery State
+    const [galleryUrls, setGalleryUrls] = useState<string[]>(initialData?.images || []);
     const [isUploading, setIsUploading] = useState(false);
     const router = useRouter();
 
@@ -68,32 +72,25 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
         }
     }, [state, router]);
 
-    const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>, isGallery = false) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // Preview immediate (local)
-        const url = URL.createObjectURL(file);
-        setPreview(url);
+        // For main image, show preview immediately
+        if (!isGallery) {
+            const url = URL.createObjectURL(file);
+            setPreview(url);
+        }
 
         try {
             setIsUploading(true);
 
             // 1. Get Signature
             const result = await getCloudinarySignature();
-            console.log("Signature Result:", result);
-
-            if ('error' in result) {
-                throw new Error(result.error as string);
-            }
-
-            if (!result || !result.cloudName || !result.apiKey || !result.signature) {
-                throw new Error("Faltan credenciales de Cloudinary (Revisa Variables de Entorno)");
-            }
-
+            if ('error' in result) throw new Error(result.error as string);
             const { timestamp, signature, cloudName, apiKey } = result;
 
-            // 2. Upload to Cloudinary directly
+            // 2. Upload
             const formData = new FormData();
             formData.append("file", file);
             formData.append("api_key", apiKey!);
@@ -106,30 +103,30 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
                 body: formData
             });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error("Cloudinary Error Data:", errorData);
-                throw new Error(errorData.error?.message || `Error ${response.status}: ${response.statusText}`);
-            }
-
+            if (!response.ok) throw new Error("Error en la subida a Cloudinary");
             const data = await response.json();
 
             if (data.secure_url) {
-                setUploadedUrl(data.secure_url);
-                toast.success("Imagen subida correctamente a la nube");
-            } else {
-                throw new Error("No secure_url in response");
+                if (isGallery) {
+                    setGalleryUrls(prev => [...prev, data.secure_url]);
+                } else {
+                    setUploadedUrl(data.secure_url);
+                }
+                toast.success("Imagen subida correctamente");
             }
 
         } catch (error: any) {
-            console.error("Upload error:", error);
-            toast.error(`Error al subir imagen: ${error.message || "Fallo desconocido"}`);
-            // Clear preview on error so user knows it failed
-            setPreview(null);
-            if (initialData?.image) setPreview(initialData.image);
+            toast.error(`Error: ${error.message}`);
+            if (!isGallery) {
+                setPreview(initialData?.image || null);
+            }
         } finally {
             setIsUploading(false);
         }
+    };
+
+    const removeGalleryImage = (index: number) => {
+        setGalleryUrls(prev => prev.filter((_, i) => i !== index));
     };
 
     return (
@@ -156,6 +153,7 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
             <form action={formAction} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {mode === "edit" && <input type="hidden" name="id" value={initialData?.id} />}
                 {mode === "edit" && <input type="hidden" name="existingImage" value={initialData?.image} />}
+                <input type="hidden" name="additionalImages" value={JSON.stringify(galleryUrls)} />
 
                 {/* Main Info */}
                 <div className="lg:col-span-2 space-y-6">
@@ -298,9 +296,37 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
                                 />
                             </label>
                             <p className="text-xs text-gray-400">
-                                * Sube una imagen clara (formato JPG, PNG o WebP). No hay limite de tamaño (Cloudinary).
+                                * Sube una imagen clara (formato JPG, PNG o WebP).
                             </p>
                         </div>
+                    </div>
+
+                    {/* Gallery section */}
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mt-6">
+                        <h3 className="font-bold text-lg mb-4">Fotos Adicionales (Variantes)</h3>
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                            {galleryUrls.map((url, idx) => (
+                                <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border">
+                                    <Image src={url} alt={`Variante ${idx + 1}`} fill className="object-cover" />
+                                    <button
+                                        type="button"
+                                        onClick={() => removeGalleryImage(idx)}
+                                        className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition"
+                                    >
+                                        <X className="h-3 w-3" />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                        <label className="block w-full text-center py-4 border-2 border-dashed rounded-lg cursor-pointer hover:bg-gray-50 transition border-gray-200">
+                            <span className="text-sm font-medium text-gray-600">+ Agregar Variante</span>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => handleImageChange(e, true)}
+                                className="hidden"
+                            />
+                        </label>
                     </div>
 
                     <SubmitButton mode={mode} isUploading={isUploading} />

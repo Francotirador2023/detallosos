@@ -17,6 +17,14 @@ export default function ProductView({ product, relatedProducts }: ProductViewPro
     const addItem = useCartStore((state) => state.addItem);
     const [quantity, setQuantity] = useState(1);
     const [isAdded, setIsAdded] = useState(false);
+    const [selectedImage, setSelectedImage] = useState(product.image);
+
+    // Sync selected image if product changes
+    if (selectedImage !== product.image && !product.images?.includes(selectedImage)) {
+        setSelectedImage(product.image);
+    }
+
+    const allImages = [product.image, ...(product.images || [])].filter((img, index, self) => self.indexOf(img) === index);
 
     const handleAddToCart = () => {
         // Requirements said simple "Add to cart", but for details page we might want quantity.
@@ -47,7 +55,7 @@ export default function ProductView({ product, relatedProducts }: ProductViewPro
                 >
                     <div className="relative aspect-square overflow-hidden rounded-3xl bg-gray-100 shadow-sm border border-gray-100">
                         <Image
-                            src={(product.image.startsWith("http") || product.image.startsWith("/")) ? product.image : "/logo.png"}
+                            src={(selectedImage.startsWith("http") || selectedImage.startsWith("/")) ? selectedImage : "/logo.png"}
                             alt={product.name}
                             fill
                             className="object-cover hover:scale-105 transition-transform duration-700"
@@ -55,9 +63,22 @@ export default function ProductView({ product, relatedProducts }: ProductViewPro
                         />
                     </div>
                     <div className="grid grid-cols-4 gap-4">
-                        {[1, 2, 3, 4].map((i) => (
-                            <div key={i} className="aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer opacity-70 hover:opacity-100 transition-opacity">
-                                <Image src={(product.image.startsWith("http") || product.image.startsWith("/")) ? product.image : "/logo.png"} alt="Thumbnail" width={200} height={200} className="object-cover w-full h-full" />
+                        {allImages.map((img, i) => (
+                            <div
+                                key={i}
+                                onClick={() => setSelectedImage(img)}
+                                className={cn(
+                                    "aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer transition-all border-2",
+                                    selectedImage === img ? "opacity-100 border-primary shadow-md" : "opacity-70 border-transparent hover:opacity-100"
+                                )}
+                            >
+                                <Image
+                                    src={(img.startsWith("http") || img.startsWith("/")) ? img : "/logo.png"}
+                                    alt={`Thumbnail ${i + 1}`}
+                                    width={200}
+                                    height={200}
+                                    className="object-cover w-full h-full"
+                                />
                             </div>
                         ))}
                     </div>

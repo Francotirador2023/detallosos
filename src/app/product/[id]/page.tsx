@@ -35,6 +35,7 @@ export default async function ProductPage({ params }: PageProps) {
         name: product.name,
         price: Number(product.price),
         image: product.image,
+        images: (product as any).images || [],
         category: product.category || "",
         description: product.description || "",
         stock: (product as any).stock || 0,

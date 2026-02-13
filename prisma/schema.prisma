@@ -13,6 +13,7 @@ model Product {
   description String?
   price       Decimal
   image       String
+  images      String[]    @default([])
   category    String
   stock       Int         @default(10)
   isActive    Boolean     @default(true)

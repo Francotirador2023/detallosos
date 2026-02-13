@@ -81,14 +81,26 @@ export async function createProduct(prevState: any, formData: FormData) {
         const stock = parseInt(formData.get("stock") as string) || 0;
         const isActive = formData.get("isActive") === "true";
 
+        // Handle additional images (JSON array from client)
+        const additionalImagesJson = formData.get("additionalImages") as string;
+        let additionalImages: string[] = [];
+        if (additionalImagesJson) {
+            try {
+                additionalImages = JSON.parse(additionalImagesJson);
+            } catch (e) {
+                console.error("Error parsing additionalImages:", e);
+            }
+        }
+
         console.log("Creating product in DB...");
-        await db.product.create({
+        await (db.product as any).create({
             data: {
                 name,
                 price,
                 category,
                 description,
                 image: imageUrl,
+                images: additionalImages,
                 stock,
                 isActive,
             }
@@ -159,7 +171,18 @@ export async function updateProduct(prevState: any, formData: FormData) {
         const stock = parseInt(formData.get("stock") as string) || 0;
         const isActive = formData.get("isActive") === "true";
 
-        await db.product.update({
+        // Handle additional images (JSON array from client)
+        const additionalImagesJson = formData.get("additionalImages") as string;
+        let additionalImages: string[] = [];
+        if (additionalImagesJson) {
+            try {
+                additionalImages = JSON.parse(additionalImagesJson);
+            } catch (e) {
+                console.error("Error parsing additionalImages:", e);
+            }
+        }
+
+        await (db.product as any).update({
             where: { id },
             data: {
                 name,
@@ -167,6 +190,7 @@ export async function updateProduct(prevState: any, formData: FormData) {
                 category,
                 description,
                 image: imageUrl,
+                images: additionalImages,
                 stock,
                 isActive,
             }
