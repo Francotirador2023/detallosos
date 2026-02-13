@@ -91,10 +91,15 @@ export default function ProductView({ product, relatedProducts }: ProductViewPro
                     transition={{ duration: 0.5, delay: 0.2 }}
                     className="flex flex-col h-full"
                 >
-                    <div className="mb-2">
+                    <div className="mb-2 flex items-center gap-2">
                         <span className="bg-red-50 text-primary px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
                             {product.category}
                         </span>
+                        {product.category === 'exclusivo' && (
+                            <span className="bg-primary text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider animate-pulse">
+                                Próximamente
+                            </span>
+                        )}
                     </div>
 
                     <h1 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">{product.name}</h1>
@@ -129,14 +134,14 @@ export default function ProductView({ product, relatedProducts }: ProductViewPro
 
                             <button
                                 onClick={handleAddToCart}
-                                disabled={product.stock <= 0}
+                                disabled={product.stock <= 0 || product.category === 'exclusivo'}
                                 className={cn(
                                     "flex-1 bg-primary text-white font-bold text-lg py-3 px-8 rounded-full shadow-lg hover:shadow-primary/40 hover:-translate-y-1 transition-all flex items-center justify-center gap-3 active:scale-95",
-                                    product.stock <= 0 && "opacity-50 grayscale cursor-not-allowed transform-none shadow-none"
+                                    (product.stock <= 0 || product.category === 'exclusivo') && "opacity-50 grayscale cursor-not-allowed transform-none shadow-none"
                                 )}
                             >
                                 <ShoppingBag />
-                                {product.stock <= 0 ? "Producto Agotado" : isAdded ? "¡Agregado!" : "Agregar al Carrito"}
+                                {product.category === 'exclusivo' ? "Próximamente" : product.stock <= 0 ? "Producto Agotado" : isAdded ? "¡Agregado!" : "Agregar al Carrito"}
                             </button>
 
                             <button className="p-3 bg-gray-100 rounded-full text-gray-600 hover:bg-gray-200 hover:text-red-500 transition-colors">

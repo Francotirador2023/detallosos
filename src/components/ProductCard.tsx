@@ -47,6 +47,12 @@ export default function ProductCard({ product }: ProductCardProps) {
                     </div>
                 )}
 
+                {product.category === 'exclusivo' && (
+                    <div className="absolute top-4 right-4 bg-primary text-white px-3 py-1 rounded-full text-xs font-bold z-10 animate-pulse">
+                        PRÓXIMAMENTE
+                    </div>
+                )}
+
                 {!product.isActive && (
                     <div className="absolute inset-0 bg-white/40 flex items-center justify-center z-10">
                         <span className="bg-white text-gray-500 px-4 py-1 rounded-full text-xs font-bold border shadow-sm">
@@ -59,14 +65,14 @@ export default function ProductCard({ product }: ProductCardProps) {
                 <div className="absolute inset-x-0 bottom-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 bg-gradient-to-t from-black/50 to-transparent flex justify-center pb-6">
                     <button
                         onClick={handleAddToCart}
-                        disabled={isOutOfStock}
+                        disabled={isOutOfStock || product.category === 'exclusivo'}
                         className={cn(
                             "bg-white text-primary font-bold py-2 px-6 rounded-full shadow-lg transform transition-all flex items-center gap-2",
-                            isOutOfStock ? "opacity-50 cursor-not-allowed bg-gray-200 text-gray-400" : "hover:bg-primary hover:text-white"
+                            (isOutOfStock || product.category === 'exclusivo') ? "opacity-50 cursor-not-allowed bg-gray-200 text-gray-400" : "hover:bg-primary hover:text-white"
                         )}
                     >
                         <ShoppingBag className="h-4 w-4" />
-                        {isOutOfStock ? "Agotado" : "Agregar"}
+                        {product.category === 'exclusivo' ? "Próximamente" : isOutOfStock ? "Agotado" : "Agregar"}
                     </button>
                 </div>
             </div>
